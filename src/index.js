@@ -50,7 +50,7 @@ function onLoadMoreBtnClick() {
     
     makeSearch( config).then(data => {
         config.totalHits += config.perPage;
-        console.log(config.totalHits);
+        
         makeMarckUp(data);
         if (config.totalHits >= data.totalHits) {
             refs.loadMoreBtn.classList.add('disabled');
