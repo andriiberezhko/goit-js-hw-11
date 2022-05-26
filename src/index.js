@@ -1,15 +1,10 @@
 import './sass/main.scss';
 import Notiflix from 'notiflix';
-import makeSearch from './search_api';
-import marckupTpl from './cardTpl';
-import { config } from './config_api';
-
-
+import makeSearch from './js/search_api';
+import marckupTpl from './js/cardTpl';
+import { config } from './js/config_api';
 // Додатковий імпорт стилів
 import "notiflix/dist/notiflix-3.2.5.min.css";
-
-
-
 
 const refs = {
     searchForm: document.querySelector('#search-form'),
@@ -17,33 +12,27 @@ const refs = {
     loadMoreBtn: document.querySelector('.load-more'),
 };
 
-
-
 refs.searchForm.addEventListener('submit', onSearchFormSubmit);
 refs.loadMoreBtn.classList.add('disabled');
 refs.loadMoreBtn.addEventListener('click', onLoadMoreBtnClick);
 
-function onSearchFormSubmit (event) {
+function onSearchFormSubmit(event) {
     event.preventDefault();
     if (!inputFieldValidation(event)) {
         return;
-    } ;
-      
-    makeSearch( config).then(data => {
-        
+    } ;      
+    makeSearch( config).then(data => {        
         if (data.totalHits === 0) {
             config.search = '';
             return Notiflix.Notify.failure("Sorry, there are no images matching your search query. Please try again.");
-        };
-       
+        };       
         config.page += 1;
         refs.loadMoreBtn.classList.remove('disabled');
         config.totalHits += config.perPage;
-        makeMarckUp(data);         
-           
+        event.target.reset();
+        makeMarckUp(data);             
     })
-        .catch(error => errorHandling());
-    
+        .catch(error => errorHandling());    
 };
 
 function onLoadMoreBtnClick() {
@@ -76,20 +65,21 @@ function clearMarckUp() {
 };
 
 function inputFieldValidation(event) {
-    if (config.search !== event.currentTarget.elements.searchQuery.value) {
-        
+    if (event.currentTarget.elements.searchQuery.value.trim() === '') {
+        clearMarckUp();
+        refs.loadMoreBtn.classList.add('disabled');
+        Notiflix.Notify.failure("Введи что нибудь!!!");
+        return false;
+    };    
+    if (event.currentTarget.elements.searchQuery.value.trim() !== config.search) {
+                
         config.search = event.currentTarget.elements.searchQuery.value;
         config.page = 1;
         refs.loadMoreBtn.classList.add('disabled');
         config.totalHits = 0;
         clearMarckUp();
         return true;
-    };
-    if (config.search === '') {
-        clearMarckUp();
-        Notiflix.Notify.failure("Введи что нибудь!!!");
-        return false;
-    };
+    };    
 };
 
 function errorHandling() {
